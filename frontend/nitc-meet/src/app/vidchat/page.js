@@ -114,7 +114,7 @@ const page = () => {
     <div className=" p-4 h-[100%] w-[100%] bg-[#59cba70e] backdrop-blur-md flex flex-col items-center  justify-center">
 
       <div className="w-[80%] h-[90%] relative bg-[#111317] overflow-scroll overflow-x-hidden rounded-[20px] ring-1 ring-[#00E09A] box-border">
-      <div className="bg-red-600 relative w-[20px] h-[20px] rounded-full flex text-center items-center justify-center top-[20px] left-[20px] cursor-pointer" onClick={() => setOpenPopup(false)} ><FaTimes  size={12}/></div>
+      <div className="bg-red-600 absolute   w-[20px] h-[20px] m-2 rounded-full flex text-center items-center justify-center top-[20px] left-[20px] cursor-pointer" onClick={() => setOpenPopup(false)} ><FaTimes  size={12}/></div>
       <div className="items-center relative text-[18px] justify-center text-center top-[10px]">Personality Finder</div>
       <form onSubmit={handleSubmit} className="flex flex-col  space-y-6">
         <div className="grid grid-cols-2 gap-3 m-5 p-[40px]">
@@ -130,7 +130,7 @@ const page = () => {
             "On a scale from -5 to 5, how much do you believe it’s okay to harm one person to save many?",
             "To what extent do you believe people should be held accountable for past actions that were acceptable at the time but are now considered wrong?",
           ].map((question, index) => (
-            <div key={index} className="flex flex-col w-1/2 text-center justify-between space-y-2 space-x-6 ml-[25%]">
+            <div key={index} className="flex flex-col w-1/2 h-[20vh] text-center justify-around ml-[25%]">
               <label htmlFor={`q${index + 1}`} className="text-[12px] font-mono font-thin">
                 {question}
               </label>
