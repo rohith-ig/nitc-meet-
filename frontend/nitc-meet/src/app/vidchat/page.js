@@ -212,9 +212,9 @@ const page = () => {
             <FaSignOutAlt size={24} />
           </a>
         </div>
-        <div className="absolute top-[10px] left-[80px] font-productsans font-bold text-[32px]">
-          NITCMeet
-        </div>
+        <a href="/." className="absolute top-[10px] left-[80px] font-productsans font-bold text-[32px]">
+          NITCMeet.
+        </a>
         <div className="bg-gradient-to-tr from-[#111317c2] to-[#111317] absolute w-[71.5%] h-[90%] bottom-[0px] left-[80px] rounded-[20px] rounded-tr-none flex flex-col items-center">
           <div className=" w-[97%] h-[80px] flex flex-row justify-between items-center">
             <div className="flex flex-row">
