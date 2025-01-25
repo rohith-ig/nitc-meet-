@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import {
   FaHome,
   FaUser,
@@ -14,7 +14,51 @@ import { IoSendSharp } from "react-icons/io5";
 import { IoAirplane } from "react-icons/io5";
 
 
+import React, { act, useEffect, useRef, useState } from "react";
+import { initializeApp } from "firebase/app";
+import {
+  getFirestore,
+  collection,
+  doc,
+  setDoc,
+  onSnapshot,
+  addDoc,
+  getDoc,
+  getDocs,
+  deleteDoc,
+  query,
+} from "firebase/firestore";
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDvZ2I3NeTQIVR1rfBCXKJfvw_h7om0CSo",
+  authDomain: "nitcmeet-e3541.firebaseapp.com",
+  projectId: "nitcmeet-e3541",
+  storageBucket: "nitcmeet-e3541.firebasestorage.app",
+  messagingSenderId: "197061917705",
+  appId: "1:197061917705:web:239ad34cbda69a4f498cd8",
+};
+const ReloadButton = () => {
+  window.location.href = window.location.href;
+};
+// Initialize Firebase app
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const servers = {
+  iceServers: [
+    {
+      urls: ["stun:stun1.l.google.com:19302", "stun:stun2.l.google.com:19302"],
+    },
+  ],
+  iceCandidatePoolSize: 10,
+};
+
+
+
 const page = () => {
+  const { data: session } = useSession();
+  let userID = 1234;
   const [selected, setSelected] = useState("Chat");
 
   const [time, setTime] = useState(0); // Time in seconds
@@ -102,6 +146,267 @@ const page = () => {
     e.preventDefault();
     console.log('Form Responses:', responses);
   };
+
+//rohithinte avaratham
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
+  const [localStream, setLocalStream] = useState(null);
+  const [remoteStream, setRemoteStream] = useState(null);
+  const [pc, setpc] = useState(null);
+  const [callId, setCallId] = useState("");
+  const [dc,setdc] = useState(null);
+  const [rec,setrec] = useState("initial");
+  const [hh,sethh] = useState("");
+  const [active,setactive] = useState(false);
+  const [skipstate,setskip] = useState(false);
+
+
+  const init = () => {
+    if (typeof window !== "undefined") {
+      const pc = new RTCPeerConnection(servers);
+      setpc(pc);
+      setRemoteStream(new MediaStream());
+      const dataChannel = pc.createDataChannel("chat");
+      dataChannel.onopen = () => console.log("Data channel is open!");
+      dataChannel.onclose = () => console.log("Data channel is closed.");
+      setdc(dataChannel);
+      pc.ondatachannel = (event) => {
+        const incomingDataChannel = event.channel;
+        console.log("Data channel received!");
+        setdc(incomingDataChannel); // Update state with the received data channel
+
+        // Handle message from incoming data channel
+        incomingDataChannel.onmessage = async (event) => {
+          if (event.data === "dc1234x") {
+            setRemoteStream(null);
+            alert("Stranger Disconnected!");
+            setTimeout(() => {
+              ReloadButton();
+            }, 1500);
+          }
+          setrec((prevrec) => prevrec + "Stranger: " + event.data + "\n\n");
+          console.log("Message received from remote peer:", event.data);
+        };
+      };
+
+      // Handle messages on the created data channel
+      dataChannel.onmessage = (event) => { 
+        console.log("Message received:", event.data);
+        setrec((prevrec) => prevrec + "Stranger: " + event.data + "\n\n");
+      }
+    }
+  }
+  useEffect(() => {
+    init();
+    setactive(true);
+  }, []);
+  const refresh = async () => {
+    init();
+    startWebcam();
+    call();
+    setskip(0);}
+  useEffect(()=>{
+    if (skipstate) {
+      refresh();
+    }
+  },[skipstate]);
+
+
+  useEffect(()=> {
+    if (active) startWebcam();
+    console.log("toggle")
+  }, [active]);
+
+
+  const startWebcam = async () => {
+    if (!navigator.mediaDevices || !pc) {
+      console.error("Webcam or pc is not supported in this environment.");
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: true,
+      audio: true,
+    });
+    
+    // Mute the audio track to prevent feedback
+    const audioTrack = stream.getAudioTracks()[0];
+    if (audioTrack) {
+      audioTrack.enabled = true; // Disables the audio track
+    }
+    
+    setLocalStream(stream);
+
+    stream.getTracks().forEach((track) => {
+      pc.addTrack(track, stream);
+    });
+
+    pc.ontrack = (event) => {
+      event.streams[0].getTracks().forEach((track) => {
+        remoteStream.addTrack(track);
+      });
+    };
+
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+      localVideoRef.current.muted = true;
+    }
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  };
+  const answerBut = async (callIdx) => {
+    const callDoc = doc(db, "calls", callIdx);
+
+    // Reference to the subcollections
+    const answerCandidatesCollection = collection(callDoc, "answerCandidates");
+    const offerCandidatesCollection = collection(callDoc, "offerCandidates");
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        addDoc(answerCandidatesCollection, event.candidate.toJSON());
+      }
+    };
+
+    const callSnapshot = await getDoc(callDoc);
+    if (!callSnapshot.exists()) {
+      console.error("Call document does not exist!");
+      return;
+    }
+
+    const callData = callSnapshot.data(); // Correctly define callData here
+    console.log("Call Data:", callData);
+
+    if (callData?.offer) {
+      const offerDescription = callData.offer;
+      await pc.setRemoteDescription(new RTCSessionDescription(offerDescription));
+
+      const answerDescription = await pc.createAnswer();
+      await pc.setLocalDescription(answerDescription);
+
+      const answer = {
+        type: answerDescription.type,
+        sdp: answerDescription.sdp,
+      };
+
+      await setDoc(callDoc, { ...callData, answer }); // Preserve existing callData
+    } else {
+      console.error("No offer found in the call document.");
+      return;
+    }
+
+    onSnapshot(offerCandidatesCollection, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const candidateData = change.doc.data();
+          const candidate = new RTCIceCandidate(candidateData);
+          pc.addIceCandidate(candidate);
+        }
+      });
+    });
+    pc.ondatachannel = (event) => {
+      const dataChannel = event.channel; // Accept the incoming Data Channel
+      console.log(event.data);
+    };
+  };
+
+  const hangup = () => {
+    dc.send("dc1234x");
+    ReloadButton();
+  }
+
+  const call = async () => {
+    if (!pc) return;
+    let flag = 0;
+    const waitroom = doc(collection(db,"waitroom"));
+    const waitref = collection(db, "waitroom");
+    const q = query(waitref);
+    await getDocs(q).then(async (querySnapshot) => {
+      console.log(querySnapshot.size); 
+      const length = querySnapshot.size; 
+      if (length && length != 0) {
+        console.log("Other User Found with ID:", querySnapshot.docs[0].data().callId);
+        const otherUser = querySnapshot.docs[0].data().userID;
+        console.log("Other User ID:", otherUser);
+        await answerBut(querySnapshot.docs[0].data().callId);
+        const docref = doc(db, "waitroom", querySnapshot.docs[0].id);
+        await deleteDoc(docref);
+        console.log("found docs");
+        querySnapshot.forEach(doc => {console.log(doc.id,"=>",doc.data)});
+        flag = 1;
+      } 
+    }).catch((error) => {
+      console.error("Error getting documents: ", error);
+    });
+    console.log("flag",flag); 
+    if (flag) return;
+    const callDoc = doc(collection(db, "calls"));
+    const offerCandidates = collection(callDoc, "offerCandidates");
+    const answerCandidates = collection(callDoc, "answerCandidates");
+    await setDoc(waitroom,{callId:callDoc.id,userID:userID,token:""});
+    setCallId(callDoc.id);
+    console.log("creating call with id: ", callDoc.id);
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        addDoc(offerCandidates, event.candidate.toJSON());
+      }
+    };
+
+    const offerDescription = await pc.createOffer();
+    await pc.setLocalDescription(offerDescription);
+    const offer = {
+      sdp: offerDescription.sdp,
+      type: offerDescription.type,
+    };
+
+    await setDoc(callDoc, { offer });
+
+    onSnapshot(callDoc, (snapshot) => {
+      const data = snapshot.data();
+      if (data?.answer && !pc.currentRemoteDescription) {
+        const answerDescription = new RTCSessionDescription(data.answer);
+        pc.setRemoteDescription(answerDescription);
+      }
+    });
+
+    onSnapshot(answerCandidates, (snapshot) => {
+      snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+          const candidate = new RTCIceCandidate(change.doc.data());
+          pc.addIceCandidate(candidate);
+        }
+      });
+    });
+  };
+  const ht = (e) => {
+    sethh(e.target.value)
+  }
+  const sendidk = () => {
+    document.getElementById("textbox").value = ""
+    console.log("sending msg",dc)
+    dc.send(hh);
+    setrec(rec + "You:" + hh + "\n\n")
+    sethh("");
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -239,9 +544,9 @@ const page = () => {
               </div>
           </div>
           <div className="relative bg-[#191B1F] w-[97%] h-[80%] mb-[4px] rounded-[15px]">
-            VIDEO
+            <video className='videos w-full' ref={remoteVideoRef} autoPlay playsInline  />
             <div className="bg-red-600 w-[232px]  h-[128px] absolute right-[12px] bottom-[12px] rounded-[10px] ring-2 ring-[#00E09A]">
-              <Webcam mirrored={true} imageSmoothing={true} />
+              <video className='videos' ref={localVideoRef} autoPlay playsInline  />
             </div>
           </div>
           <div className="w-[97%] h-[20%] mt-[4px] rounded-[15px] flex flex-row">
@@ -250,17 +555,18 @@ const page = () => {
   <div className="flex flex-row justify-between mt-3 items-center mb-2">
     <button
       className="bg-[#00E09A] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#00e099b5]"
-      onClick={handleStart}
+      onClick={call}
     >
       START
     </button>
     <button
       className="bg-[#E00004] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#e00004b9]"
-      onClick={handleStop}
+      onClick={hangup}  
     >
       STOP
     </button>
     <button
+      onClick={sendidk}
       className="bg-[#00C9BD] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#00c9bcb6]"
     >
       SKIP
@@ -360,7 +666,7 @@ const page = () => {
             
           </div>
                 
-          <div className="absolute top-[90px] w-[96%] h-[75%]">CHAT GOES HERE</div>
+          <div className="absolute overflow-scroll overflow-x-hidden top-[90px] w-[96%] h-[75%] pr-[50%] border-2 border-white">{rec}</div>
           
           <div className="absolute text-[#9ca3af] bottom-[100px] h-[35px] m-2  w-[96%] flex justify-between">
 
@@ -381,7 +687,7 @@ const page = () => {
           )}
               
           </div>
-          <input className="absolute bg-[#191B1F] w-[96%] h-[82px] rounded-[10px] bottom-3 ring-1 p-2 ring-white focus:outline-none"></input>
+          <input onChange={ht} id="textbox" className="absolute bg-[#191B1F] w-[96%] h-[82px] rounded-[10px] bottom-3 ring-1 p-2 ring-white focus:outline-none"></input>
         </div>
       </div>
     </div>

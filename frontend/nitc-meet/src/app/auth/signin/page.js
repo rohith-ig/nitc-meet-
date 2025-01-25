@@ -4,10 +4,9 @@ import React from "react";
 import { signIn, signOut, useSession } from "next-auth/react";
 
 const page = () => {
-  const { data: session } = useSession();
+    const { data: session } = useSession();
   return (
     <div className="font-productsans">
-      
       <div
         className="bg-cover bg-center h-screen w-full flex flex-col items-center"
         style={{ backgroundImage: "url(/gradient_login.png)" }}>
@@ -49,4 +48,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default page;
