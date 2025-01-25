@@ -1,6 +1,5 @@
 "use client";
-
-import React, { useEffect, useRef, useState } from "react";
+import React, { act, useEffect, useRef, useState } from "react";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -25,7 +24,9 @@ const firebaseConfig = {
   messagingSenderId: "197061917705",
   appId: "1:197061917705:web:239ad34cbda69a4f498cd8",
 };
-
+const ReloadButton = () => {
+  window.location.href = window.location.href;
+};
 // Initialize Firebase app
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -48,14 +49,83 @@ export default function App() {
   const [remoteStream, setRemoteStream] = useState(null);
   const [pc, setpc] = useState(null);
   const [callId, setCallId] = useState("");
+  const [dc,setdc] = useState(null);
+  const [rec,setrec] = useState("");
+  const [hh,sethh] = useState("");
+  const [active,setactive] = useState(false);
+  const [skipstate,setskip] = useState(false);
 
-  useEffect(() => {
+  const match = async () => {
+    const waitroom = doc(collection(db,"waitroom"));
+    const waitref = collection(db, "waitroom");
+    const q = query(waitref);
+    await getDocs(q).then(async (querySnapshot) => {
+      if (querySnapshot.docs.length > 1) {
+        let u1 = null;
+        let u2 = null;
+        u1 = querySnapshot.docs[0].data();
+        u2 = querySnapshot.docs[1].data();
+        
+      }
+    });
+  }
+
+  const init = () => {
     if (typeof window !== "undefined") {
       const pc = new RTCPeerConnection(servers);
       setpc(pc);
       setRemoteStream(new MediaStream());
+      const dataChannel = pc.createDataChannel("chat");
+      dataChannel.onopen = () => console.log("Data channel is open!");
+      dataChannel.onclose = () => console.log("Data channel is closed.");
+      dataChannel.onmessage = (event) => {
+        console.log("Message received from peer:", event.data);
+      };
+      setdc(dataChannel);
+      pc.ondatachannel = (event) => {
+        const incomingDataChannel = event.channel;
+        console.log("Data channel received!");
+        setdc(incomingDataChannel); // Update state with the received data channel
+
+        // Handle message from incoming data channel
+        incomingDataChannel.onmessage = (event) => {
+          if (event.data === "dc1234x") {
+            setRemoteStream(null);
+            alert("Stranger Disconnected!").then(ReloadButton());
+          }
+          setrec(event.data);
+          console.log("Message received from remote peer:", event.data);
+        };
+      };
+
+      // Handle messages on the created data channel
+      dataChannel.onmessage = (event) => { 
+        console.log("Message received:", event.data);
+        setrec(event.data)
+      }
     }
+  }
+  useEffect(() => {
+    init();
+    setactive(true);
   }, []);
+  const refresh = async () => {
+    init();
+    startWebcam();
+    call();
+    setskip(0);}
+  useEffect(()=>{
+    if (skipstate) {
+      refresh();
+    }
+  },[skipstate]);
+
+
+  useEffect(()=> {
+    if (active) startWebcam();
+    console.log("toggle")
+  }, [active]);
+
 
   const startWebcam = async () => {
     if (!navigator.mediaDevices || !pc) {
@@ -142,8 +212,16 @@ export default function App() {
         }
       });
     });
+    pc.ondatachannel = (event) => {
+      const dataChannel = event.channel; // Accept the incoming Data Channel
+      console.log(event.data);
+    };
   };
 
+  const hangup = () => {
+    dc.send("dc1234x");
+    ReloadButton();
+  }
   
   const call = async () => {
     if (!pc) return;
@@ -173,7 +251,7 @@ export default function App() {
     const callDoc = doc(collection(db, "calls"));
     const offerCandidates = collection(callDoc, "offerCandidates");
     const answerCandidates = collection(callDoc, "answerCandidates");
-    await setDoc(waitroom,{callId:callDoc.id,userID:userID});
+    await setDoc(waitroom,{callId:callDoc.id,userID:userID,token:""});
     setCallId(callDoc.id);
     console.log("creating call with id: ", callDoc.id);
     pc.onicecandidate = (event) => {
@@ -184,7 +262,6 @@ export default function App() {
 
     const offerDescription = await pc.createOffer();
     await pc.setLocalDescription(offerDescription);
-
     const offer = {
       sdp: offerDescription.sdp,
       type: offerDescription.type,
@@ -209,7 +286,14 @@ export default function App() {
       });
     });
   };
-
+  const ht = (e) => {
+    sethh(e.target.value)
+  }
+  const sendidk = () => {
+    console.log("sending msg",dc)
+    dc.send(hh);
+    sethh("");
+  }
 
   return (
     <div>
@@ -237,16 +321,12 @@ export default function App() {
         <button onClick={call}>Create Call</button>
         <p>Call ID: {callId}</p>
       </section>
-
       <section>
-        <h2>3. Join a Call</h2>
-        <input
-          type="text"
-          placeholder="Enter Call ID"
-          value={callId}
-          onChange={(e) => setCallId(e.target.value)}
-        />
-        <button onClick={answerBut}>Answer Call</button>
+        <input className='border-2 border-black' type="text" onChange={ht}></input>
+        <button onClick={sendidk}>send text</button>
+        <div>{rec}</div>
+        <button onClick={hangup}>Hangup</button>
+        <button onClick={() => {setskip(1)}}>skip</button>
       </section>
     </div>
   );
