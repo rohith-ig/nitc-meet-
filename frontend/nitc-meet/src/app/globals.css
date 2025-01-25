@@ -31,3 +31,56 @@ body {
   font-style: normal;
 
 }
+
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: #333333;
+  border-radius: 9999px; /* Track background color */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #00E09A; /* Scrollbar thumb color */
+  border-radius: 4px; /* Rounded edges for the thumb */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #02bd81; /* Thumb color on hover */
+}
+
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #191b1f; /* Track color */
+  height: 10px;
+  border-radius: 9999px;
+  z-index: 1;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #00E09A; /* Thumb color */
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 100;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #00E09A ; /* Track color */
+  height: 4px;
+  border-radius: 9999px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background: #00E09A; /* Thumb color */
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+}
