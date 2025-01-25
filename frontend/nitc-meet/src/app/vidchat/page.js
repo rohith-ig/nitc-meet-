@@ -11,6 +11,7 @@ import {
 import { IoSend } from "react-icons/io5";
 import Webcam from "react-webcam";
 import { IoSendSharp } from "react-icons/io5";
+import { IoAirplane } from "react-icons/io5";
 
 
 const page = () => {
@@ -205,10 +206,10 @@ const page = () => {
           </div>
 
           {/* Logout Button */}
-          <a
-            href="#"
-            className="text-white p-2 hover:bg-[#00E09A] rounded-full mt-auto transition-colors duration-300 ease-in-out"
-          >
+          <a href="/hmm" className="text-white p-2 hover:bg-[#00E09A] rounded-full mt-auto transition-colors duration-300 ease-in-out">
+            <IoAirplane size={24} />
+          </a>
+          <a href="#" className="text-white p-2 hover:bg-[#00E09A] rounded-full mt-auto transition-colors duration-300 ease-in-out">
             <FaSignOutAlt size={24} />
           </a>
         </div>

@@ -10,7 +10,7 @@ const page = () => {
         style={{ backgroundImage: "url(/gradient_login.png)" }}
       >
         <div className=" w-[97%] h-[80px] flex flex-row justify-between">
-          <div className=" text-[42px] ml-2 mt-2">NITCMeet.</div>
+        <a href="/."className=" text-[42px] ml-2 mt-2">NITCMeet.</a>
 
           <div className="flex flex-row gap-6 mr-6 mt-6 text-[24px]">
             <a href="#contact" className="hover:underline cursor-pointer">
