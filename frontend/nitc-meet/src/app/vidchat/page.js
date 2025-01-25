@@ -19,7 +19,7 @@ const page = () => {
                     {/* Grouped buttons for Home, About, and User in the middle */}
       <div className="flex flex-col items-center space-y-4">
         {/* Home Button */}
-        <a href="/home" className="text-white p-2 hover:bg-[#00E09A] rounded-full transition-colors duration-300 ease-in-out">
+        <a href="/.." className="text-white p-2 hover:bg-[#00E09A] rounded-full transition-colors duration-300 ease-in-out">
           <FaHome size={24} />
         </a>
 
