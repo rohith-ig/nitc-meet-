@@ -23,7 +23,7 @@ const page = () => {
         </div>
 
         <div className="ring-[5px] ring-[#00E09A] rounded-[20px]">
-            <img src="/maida.jpg"></img>
+            <img src="/maida.png" width="342px"></img>
             
         </div>
 
