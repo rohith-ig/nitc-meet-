@@ -213,7 +213,7 @@ const page = () => {
             <FaSignOutAlt size={24} />
           </a>
         </div>
-        <a href="/." className="absolute top-[10px] left-[80px] font-productsans font-bold text-[32px]">
+        <a href="/." className="absolute top-[2.6%] left-[85px] font-productsans font-bold text-[32px]">
           NITCMeet.
         </a>
         <div className="bg-gradient-to-tr from-[#111317c2] to-[#111317] absolute w-[71.5%] h-[90%] bottom-[0px] left-[80px] rounded-[20px] rounded-tr-none flex flex-col items-center">
@@ -226,10 +226,17 @@ const page = () => {
                 REPORT
               </div>
             </div>
+            <div className="flex flex-row">
 
-            <div className="font-productsans font-bold text-[26px]">
-              Osama Bin Laden
-            </div>
+            <div className="w-[140px] h-[20px] mr-3 mt-2 text-[#191B1F] text-[14px] rounded-full bg-[#ffffff]  text-center justify-center flex items-center">
+                Their Personality
+              </div>
+
+
+              <div className="font-productsans font-bold text-[26px]">
+                Osama Bin Laden
+              </div>
+              </div>
           </div>
           <div className="relative bg-[#191B1F] w-[97%] h-[80%] mb-[4px] rounded-[15px]">
             VIDEO
@@ -324,7 +331,7 @@ const page = () => {
             </div>
           </div>
         </div>
-        <div className="bg-[#191B1F] rounded-[20px] rounded-tr-none absolute right-[0px] h-screen w-[23.5%] flex flex-col items-center">
+        <div className="bg-[#191B1F] rounded-[20px] rounded-tr-none absolute right-[0px] h-screen w-[23.8%] flex flex-col items-center">
           <div className="relative h-[41px] top-[32px] w-[96%] flex flex-row items-center">
             {/* Chat Button */}
             <button

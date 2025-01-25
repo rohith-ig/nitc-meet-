@@ -13,17 +13,17 @@ const page = () => {
         <a href="/."className=" text-[42px] ml-2 mt-2">NITCMeet.</a>
 
           <div className="flex flex-row gap-6 mr-6 mt-6 text-[24px]">
-            <a href="#contact" className="hover:underline cursor-pointer">
+            <a href="/hmm" className="hover:underline cursor-pointer">
               9/11
             </a>
-            <a href="#about" className="hover:underline cursor-pointer">
+            <a href="/about" className="hover:underline cursor-pointer">
               About
             </a>
           </div>
         </div>
 
         <div className="ring-[5px] ring-[#00E09A] rounded-[20px]">
-            <img src="/almaida.png"></img>
+            <img src="/maida.jpg"></img>
             
         </div>
 
