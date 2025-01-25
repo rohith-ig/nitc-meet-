@@ -222,9 +222,9 @@ const page = () => {
               <div className="w-[110px] h-[30px] mr-2 rounded-full bg-[#00E09A] text-[18px] text-center justify-center flex items-center">
                 {formatTime(time)}
               </div>
-              <div className="w-[140px] h-[30px] mr-2 rounded-full bg-[#E00004] text-[18px] text-center justify-center flex items-center">
+              <button className="w-[140px] h-[30px] mr-2 rounded-full bg-[#E00004] text-[18px] text-center justify-center flex items-center hover:bg-[#e00004c1]">
                 REPORT
-              </div>
+              </button>
             </div>
             <div className="flex flex-row">
 
@@ -241,7 +241,7 @@ const page = () => {
           <div className="relative bg-[#191B1F] w-[97%] h-[80%] mb-[4px] rounded-[15px]">
             VIDEO
             <div className="bg-red-600 w-[232px]  h-[128px] absolute right-[12px] bottom-[12px] rounded-[10px] ring-2 ring-[#00E09A]">
-              <Webcam mirrored={true} />
+              <Webcam mirrored={true} imageSmoothing={true} />
             </div>
           </div>
           <div className="w-[97%] h-[20%] mt-[4px] rounded-[15px] flex flex-row">
@@ -249,19 +249,19 @@ const page = () => {
   {/* First row with START, STOP, SKIP buttons */}
   <div className="flex flex-row justify-between mt-3 items-center mb-2">
     <button
-      className="bg-[#00E09A] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center"
+      className="bg-[#00E09A] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#00e099b5]"
       onClick={handleStart}
     >
       START
     </button>
     <button
-      className="bg-[#E00004] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center"
+      className="bg-[#E00004] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#e00004b9]"
       onClick={handleStop}
     >
       STOP
     </button>
     <button
-      className="bg-[#00C9BD] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center"
+      className="bg-[#00C9BD] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#00c9bcb6]"
     >
       SKIP
     </button>
@@ -360,7 +360,7 @@ const page = () => {
             
           </div>
                 
-          
+          <div className="absolute top-[90px] w-[96%] h-[75%]">CHAT GOES HERE</div>
           
           <div className="absolute text-[#9ca3af] bottom-[100px] h-[35px] m-2  w-[96%] flex justify-between">
 
