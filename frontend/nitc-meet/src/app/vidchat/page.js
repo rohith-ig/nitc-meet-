@@ -335,7 +335,7 @@ const page = () => {
           <div className="relative h-[41px] top-[32px] w-[96%] flex flex-row items-center">
             {/* Chat Button */}
             <button
-              className={`rounded-[5px] h-full w-1/4 ${
+              className={`rounded-[5px] h-full w-1/2 ${
                 selected === "Chat"
                   ? "bg-[#212528] text-[#00E09A]"
                   : "bg-[#191B1F] text-gray-400"
@@ -347,42 +347,40 @@ const page = () => {
 
             {/* Rizz Button */}
             <button
-              className={`rounded-[5px] h-full w-1/4 ${
-                selected === "Rizz"
+              className={`rounded-[5px] h-full w-1/2 ${
+                selected === "Advice"
                   ? "bg-[#212528] text-[#00E09A]"
                   : "bg-[#191B1F] text-gray-400"
               }`}
-              onClick={() => setSelected("Rizz")}
+              onClick={() => setSelected("Advice")}
             >
-              Rizz
+              Advice
             </button>
 
-            {/* Brainrot Button */}
-            <button
-              className={`rounded-[5px] h-full w-1/4 ${
-                selected === "Brainrot"
-                  ? "bg-[#212528] text-[#00E09A]"
-                  : "bg-[#191B1F] text-gray-400"
-              }`}
-              onClick={() => setSelected("Brainrot")}
-            >
-              Brainrot
-            </button>
-
-            {/* Info Button */}
-            <button
-              className={`rounded-[5px] h-full w-1/4 ${
-                selected === "Info"
-                  ? "bg-[#212528] text-[#00E09A]"
-                  : "bg-[#191B1F] text-gray-400"
-              }`}
-              onClick={() => setSelected("Info")}
-            >
-              Info
-            </button>
+            
           </div>
+                
+          
+          
+          <div className="absolute text-[#9ca3af] bottom-[100px] h-[35px] m-2  w-[96%] flex justify-between">
 
-          <div className="bg-teal-300 w-[96%]">CHAT</div>
+            {selected === "Advice" && (
+              <div className="w-[100%] flex flex-row justify-center">
+                  <button className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
+                Rizz
+              </button>
+              <button className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
+                BrainRot
+              </button>
+              <button className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
+                Info
+              </button>
+
+              </div>
+          
+          )}
+              
+          </div>
           <input className="absolute bg-[#191B1F] w-[96%] h-[82px] rounded-[10px] bottom-3 ring-1 p-2 ring-white focus:outline-none"></input>
         </div>
       </div>
