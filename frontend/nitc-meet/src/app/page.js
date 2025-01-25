@@ -10,6 +10,9 @@ import {
   onSnapshot,
   addDoc,
   getDoc,
+  getDocs,
+  deleteDoc,
+  query,
 } from "firebase/firestore";
 import "./app.css";
 
@@ -36,8 +39,7 @@ const servers = {
   iceCandidatePoolSize: 10,
 };
 
-let localStream = null;
-let remoteStream = null;
+let userID = Math.floor(Math.random() * 1000000);
 
 export default function App() {
   const localVideoRef = useRef(null);
@@ -92,8 +94,8 @@ export default function App() {
       remoteVideoRef.current.srcObject = remoteStream;
     }
   };
-  const answerBut = async () => {
-    const callDoc = doc(db, "calls", callId);
+  const answerBut = async (callIdx) => {
+    const callDoc = doc(db, "calls", callIdx);
   
     // Reference to the subcollections
     const answerCandidatesCollection = collection(callDoc, "answerCandidates");
@@ -145,13 +147,35 @@ export default function App() {
   
   const call = async () => {
     if (!pc) return;
-
+    let flag = 0;
+    const waitroom = doc(collection(db,"waitroom"));
+    const waitref = collection(db, "waitroom");
+    const q = query(waitref);
+    await getDocs(q).then(async (querySnapshot) => {
+      console.log(querySnapshot.size); 
+      const length = querySnapshot.size; 
+      if (length && length != 0) {
+        console.log("Other User Found with ID:", querySnapshot.docs[0].data().callId);
+        const otherUser = querySnapshot.docs[0].data().userID;
+        console.log("Other User ID:", otherUser);
+        await answerBut(querySnapshot.docs[0].data().callId);
+        const docref = doc(db, "waitroom", querySnapshot.docs[0].id);
+        await deleteDoc(docref);
+        console.log("found docs");
+        querySnapshot.forEach(doc => {console.log(doc.id,"=>",doc.data)});
+        flag = 1;
+      } 
+    }).catch((error) => {
+      console.error("Error getting documents: ", error);
+    });
+    console.log("flag",flag); 
+    if (flag) return;
     const callDoc = doc(collection(db, "calls"));
     const offerCandidates = collection(callDoc, "offerCandidates");
     const answerCandidates = collection(callDoc, "answerCandidates");
-
+    await setDoc(waitroom,{callId:callDoc.id,userID:userID});
     setCallId(callDoc.id);
-
+    console.log("creating call with id: ", callDoc.id);
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         addDoc(offerCandidates, event.candidate.toJSON());
