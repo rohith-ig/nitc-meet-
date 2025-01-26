@@ -58,6 +58,7 @@ const servers = {
 
 const page = () => {
   const { data: session } = useSession();
+
   let userID = 1234;
   const [selected, setSelected] = useState("Chat");
 
@@ -77,7 +78,28 @@ const page = () => {
   }, [isRunning]);
 
   const handleStart = () => setIsRunning(true);
+  const toggleAudio = () => {
+    if(localStream){
+      const audioTrack = localStream.getAudioTracks()[0];
+      if (audioTrack) {
+        audioTrack.enabled = !isAudioMuted; // Toggle audio state
+        setIsAudioMuted(!isAudioMuted);    // Update state
+      }
+    }
+  };
 
+  const toggleVideo = () => {
+    if (localStream) {
+      const videoTrack = localStream.getVideoTracks()[0];
+      if (videoTrack) {
+        videoTrack.enabled = !isVideoStopped; // Toggle video state
+        setIsVideoStopped(!isVideoStopped);  // Update state
+      }
+    }
+  };
+
+const [isAudioMuted, setIsAudioMuted] = useState(true);
+const [isVideoStopped, setIsVideoStopped] = useState(true);
   const handleStop = () => {
     setIsRunning(false); // Stop the stopwatch
     setTime(0); // Reset the timer to 0
@@ -114,16 +136,19 @@ const page = () => {
 
   // Toggle mute button state
   const handleMuteClick = () => {
+    toggleAudio();
     setIsMuteActive(!isMuteActive);
   };
 
   // Toggle stop video button state
   const handleStopVideoClick = () => {
+    toggleVideo();
     setIsStopVideoActive(!isStopVideoActive);
   };
 
   const [openPopup, setOpenPopup] = useState(false)
 
+  let convo=[]
   
   const [responses, setResponses] = useState({
     q1: 0,
@@ -182,9 +207,14 @@ const page = () => {
             alert("Stranger Disconnected!");
             setTimeout(() => {
               ReloadButton();
-            }, 1500);
+            }, 700);
           }
           setrec((prevrec) => prevrec + "Stranger: " + event.data + "\n\n");
+          convo.push("Stranger: " + event.data);
+          const p = document.createElement("p"); // Create a new <p> element
+          p.textContent = "Stranger: " + event.data;
+          p.className = 'text-bold' // Set the text content of the <p> element
+          document.getElementById("chatarea").appendChild(p); // Append the <p> element to the chatarea
           console.log("Message received from remote peer:", event.data);
         };
       };
@@ -192,6 +222,7 @@ const page = () => {
       // Handle messages on the created data channel
       dataChannel.onmessage = (event) => { 
         console.log("Message received:", event.data);
+        document.getElementById("chatarea").appendChild(document.createElement(<p>{"Strangers : "+event.data}</p>))
         setrec((prevrec) => prevrec + "Stranger: " + event.data + "\n\n");
       }
     }
@@ -384,6 +415,10 @@ const page = () => {
     document.getElementById("textbox").value = ""
     console.log("sending msg",dc)
     dc.send(hh);
+    const p = document.createElement("p"); // Create a new <p> element
+    p.textContent = "You: " + hh; // Set the text content of the <p> element
+    document.getElementById("chatarea").appendChild(p); // Append the <p> element to the chatarea
+
     setrec(rec + "You:" + hh + "\n\n")
     sethh("");
   }
@@ -666,7 +701,9 @@ const page = () => {
             
           </div>
                 
-          <div className="absolute overflow-scroll overflow-x-hidden top-[90px] w-[96%] h-[75%] pr-[50%] border-2 border-white">{rec}</div>
+          <div id="chatarea" className="absolute overflow-scroll overflow-x-hidden top-[90px] w-[96%] h-[75%] border-2 border-white">
+            
+          </div>
           
           <div className="absolute text-[#9ca3af] bottom-[100px] h-[35px] m-2  w-[96%] flex justify-between">
 
