@@ -392,6 +392,7 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
     ReloadButton();
   }
 
+
   const call = async () => {
     if (!pc) return;
     let flag = 0;
@@ -538,8 +539,8 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
         </div>
 
         <a
-          href=''
-          onClick={()=>{callFlaskEndpointper('personality',responses);}}
+          href='#'
+          onClick={()=>{callFlaskEndpointper('personality',responses);setOpenPopup(false)}}
           className="bg-[#00E09A] hover:bg-[#00e099ca] text-white py-2 px-4 rounded-lg self-center mb-4 "
         >
           Submit
@@ -649,10 +650,10 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
       STOP
     </button>
     <button
-      onClick={sendidk}
+      onClick={hangup}
       className="bg-[#00C9BD] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#00c9bcb6]"
     >
-      SEND
+      SKIP
     </button>
   </div>
 
@@ -680,25 +681,15 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
               {/* Input field */}
               <div className="relative h-full w-[97%] flex flex-row">
                 <input
-                  className="absolute bg-[#191B1F] p-2 w-[90%] right-[9.3%] h-[30px] bottom-3 mt-1 rounded-[10px] ring-1  ring-white focus:outline-none"
+                  className="absolute bg-[#191B1F] p-2 w-[90%] left-5  h-[30px] bottom-4 mt-1 rounded-[10px] ring-1  ring-white focus:outline-none"
                   type="text"
                   value={prompti}
+                  placeholder="Enter your prompt here"
                   onChange={handleChange}
                   onKeyPress={handleKeyPress}
                 />
                 {/* Send button */}
-                <button
-                  className="absolute right-0 bottom-1 bg-[#00E09A] text-white m-2 p-2 rounded-[5px] hover:bg-teal-600 focus:outline-none"
-                  onClick={() => {
-                    if (inputValue.trim() !== "") {
-                      setTags([...tags, inputValue.trim()]);
-                      setInputValue("");
-                    }
-                  }}
-                  aria-label="Send"
-                >
-                  <IoSend size={14} />
-                </button>
+                
               </div>
             </div>
           </div>
@@ -732,11 +723,24 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
             
           </div>
                 
-          <div id="chatarea" className="absolute overflow-scroll overflow-x-hidden top-[90px] w-[96%] h-[75%] border-2 border-white">
+          <div id="chatarea" className="absolute overflow-scroll overflow-x-hidden top-[90px] w-[96%] h-[67%] border-1 border-white">
             
           </div>
           
           <div className="absolute text-[#9ca3af] bottom-[100px] h-[35px] m-2  w-[96%] flex justify-between">
+
+          {selected === "Chat" && (
+              <div className="w-[100%] flex flex-row justify-center">
+                  <button onClick={sendidk} className="rounded-[5px] h-full w-[96%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
+                    Send
+                  </button>
+                  
+
+              </div>
+          
+          )}
+
+
 
             {selected === "Advice" && (
               <div className="w-[100%] flex flex-row justify-center">
