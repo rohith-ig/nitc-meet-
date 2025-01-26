@@ -65,6 +65,46 @@ const page = () => {
   const [time, setTime] = useState(0); // Time in seconds
   const [isRunning, setIsRunning] = useState(false);
 
+  const [responsetext,setResponsetext]=useState("");
+  async function callFlaskEndpoint(endpoint,prompt) {
+    console.log(prompt);
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ prompt: prompt }),
+        });
+        const data = await response.json();
+        console.log(data.response);
+        const p = document.createElement("p"); // Create a new <p> element
+        p.textContent = data.response; // Set the text content of the <p> element
+        document.getElementById("chatarea").appendChild(p);
+
+    } catch (error) { 
+        console.error('Error:', error);
+        setResponsetext("Error");
+    }
+  }
+
+  async function callFlaskEndpointper(endpoint,dataarray) {
+    try {
+        const response = await fetch(`http://127.0.0.1:5000/${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ "data": dataarray }),
+        });
+  
+        const data = await response.json();
+        setPersonality(data.response);
+      } catch (error) {
+        console.error('Error:', error);
+        setPersonality('Error');
+      }
+  }
   useEffect(() => {
     let interval;
     if (isRunning) {
@@ -110,7 +150,7 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
     const seconds = String(time % 60).padStart(2, "0");
     return `${minutes}:${seconds}`;
   };
-
+  
   const [inputValue, setInputValue] = useState(""); // To store the input value
   const [tags, setTags] = useState([]); // To store the tags
 
@@ -127,10 +167,12 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
-  const handleChange = (e) => {
-    setInputValue(e.target.value);
-  };
+    
 
+  const handleChange = (e) => {
+    setPrompti(e.target.value);
+  };
+  const [prompti,setPrompti]=useState("");
   const [isMuteActive, setIsMuteActive] = useState(false);
   const [isStopVideoActive, setIsStopVideoActive] = useState(false);
 
@@ -186,6 +228,8 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
   const [skipstate,setskip] = useState(false);
 
 
+  const [personality,setPersonality]=useState("Neutral");
+
   const init = () => {
     if (typeof window !== "undefined") {
       const pc = new RTCPeerConnection(servers);
@@ -222,7 +266,10 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
       // Handle messages on the created data channel
       dataChannel.onmessage = (event) => { 
         console.log("Message received:", event.data);
-        document.getElementById("chatarea").appendChild(document.createElement(<p>{"Strangers : "+event.data}</p>))
+        const p = document.createElement("p"); // Create a new <p> element
+        p.textContent = "Stranger: " + event.data;
+        p.className = 'text-bold' // Set the text content of the <p> element
+        document.getElementById("chatarea").appendChild(p);
         setrec((prevrec) => prevrec + "Stranger: " + event.data + "\n\n");
       }
     }
@@ -490,12 +537,13 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
           ))}
         </div>
 
-        <button
-          type="submit"
+        <a
+          href=''
+          onClick={()=>{callFlaskEndpointper('personality',responses);}}
           className="bg-[#00E09A] hover:bg-[#00e099ca] text-white py-2 px-4 rounded-lg self-center mb-4 "
         >
           Submit
-        </button>
+        </a>
       </form>
 
 
@@ -503,7 +551,7 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
 
       </div>
       
-      <p className="text-xl text-black" onClick={() => setOpenPopup(false)}>PopupMessageHere</p>
+      <p className="text-xl text-black" onClick={() => setOpenPopup(false)}></p>
     </div>
   </div>
 )}
@@ -569,12 +617,12 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
             <div className="flex flex-row">
 
             <div className="w-[140px] h-[20px] mr-3 mt-2 text-[#191B1F] text-[14px] rounded-full bg-[#ffffff]  text-center justify-center flex items-center">
-                Their Personality
+                Your Personality
               </div>
 
 
               <div className="font-productsans font-bold text-[26px]">
-                Osama Bin Laden
+                {personality}
               </div>
               </div>
           </div>
@@ -604,7 +652,7 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
       onClick={sendidk}
       className="bg-[#00C9BD] w-[158px] h-[35px] m-2 text-[20px] rounded-full text-center flex items-center justify-center hover:bg-[#00c9bcb6]"
     >
-      SKIP
+      SEND
     </button>
   </div>
 
@@ -627,31 +675,14 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
             <div className="bg-[#191B1F] w-1/2 m-2 rounded-[15px] flex flex-col items-center">
               <div className="w-[96%]  h-[100%] text-white"></div>
 
-              {/* Display added tags */}
-              <div className="w-[96%]   flex flex-wrap">
-                {tags.map((tag, index) => (
-                  <div
-                    key={index}
-                    className="bg-[#00E09A] m-2 mt-0  text-black px-2 mb-[30px] rounded-full flex items-center justify-between text-[12px]"
-                  >
-                    {tag}
-                    <button
-                      className="m-2 text-red-500"
-                      onClick={() => handleTagRemove(tag)}
-                      aria-label="Remove tag"
-                    >
-                      <FaTimes size={8} />
-                    </button>
-                  </div>
-                ))}
-              </div>
+              
 
               {/* Input field */}
               <div className="relative h-full w-[97%] flex flex-row">
                 <input
                   className="absolute bg-[#191B1F] p-2 w-[90%] right-[9.3%] h-[30px] bottom-3 mt-1 rounded-[10px] ring-1  ring-white focus:outline-none"
                   type="text"
-                  value={inputValue}
+                  value={prompti}
                   onChange={handleChange}
                   onKeyPress={handleKeyPress}
                 />
@@ -709,15 +740,15 @@ const [isVideoStopped, setIsVideoStopped] = useState(true);
 
             {selected === "Advice" && (
               <div className="w-[100%] flex flex-row justify-center">
-                  <button className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
-                Rizz
-              </button>
-              <button className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
-                BrainRot
-              </button>
-              <button className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
-                Info
-              </button>
+                  <button onClick={() => callFlaskEndpoint('rizz-call', prompti)} className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
+                    Rizz
+                  </button>
+                  <button onClick={() => callFlaskEndpoint('brainrot-call', prompti)} className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
+                    BrainRot
+                  </button>
+                  <button onClick={() => callFlaskEndpoint('info-call', prompti)} className="rounded-[5px] h-full w-[30%] mx-2 bg-[#212528] hover:bg-[#00E09A] hover:text-[#191B1F] active:bg-[#2fb88dda]">
+                    Info
+                  </button>
 
               </div>
           
